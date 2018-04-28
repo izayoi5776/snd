@@ -4,31 +4,12 @@
 #define PI 3.14159265
 using namespace std;
 
-void go(){
-	int sec  = 1;		// sound length in second
-	int hz   = 1000;	// sound Hz
-	int rate = 8000; 	// sample rate
-	int bit  = 16;		// bits 
-
-	double all = hz*2*PI*sec;
-	double step = all / sec / rate;
-	int half = pow(2, bit) /2 -1;
-	//printf("sec=%i hz=%i, rate=%i, all=%f, step=%f, half=%d\n", sec, hz, rate,all,step, half);
-	for(double i=0;i<all;i+=step){
-		//printf("i=%f, sin(i)=%f\n", i,((1 + sin(i))* 128));
-		if(bit==8){
-			printf("%c", (unsigned char)((1 + sin(i)) * half));
-		}else if(bit==16){
-			double s = ((sin(i)) *30000.0);	// sign注意、掛ける32768ならマイナスになる。
-			int ch = (unsigned char)(int)(s/256.0);
-			int cl = (unsigned char)(int)(s);
-			//printf("i=%f, s=%f, int(s)=%d, ch=%d, cl=%d, ch*256+cl=%d\n", i, s, (int)s, ch, cl, ch*256+cl);
-			printf("%c%c", ch, cl);
-		}
-	}
-}
 
 // sampling
+// f		sampling対象関数
+// from, to	xの範囲
+// rate		sampling rate
+// sec  	継続時間
 std::vector<double> sample(double from, double to, int rate, double sec, double (*f)(double)){
 	double step = (to - from) / sec / rate;
 	int cnt = sec * rate;
@@ -41,6 +22,7 @@ std::vector<double> sample(double from, double to, int rate, double sec, double 
 	return v;
 }
 
+// 8bit変換
 std::vector<char> deep8(std::vector<double> v){
 	int cnt = v.size();
 	std::vector<char> ret(cnt);
@@ -49,6 +31,7 @@ std::vector<char> deep8(std::vector<double> v){
 	}
 	return ret;
 };
+// 16bit変換
 std::vector<unsigned char> deep16(std::vector<double> v){
 	int cnt = v.size();
 	std::vector<unsigned char> ret(cnt*2);
@@ -59,8 +42,13 @@ std::vector<unsigned char> deep16(std::vector<double> v){
 	}
 	return ret;
 };
+// まとめ関数
 void go2(){
-	std::vector<double> v = sample(0.0f, 2.0*PI*1000, 44100, 1.0f, sin);
+	int sec  = 1;		// sound length in second
+	int hz   = 1000;	// sound Hz
+	int rate = 44100; 	// sample rate
+
+	std::vector<double> v = sample(0.0f, 2.0*PI*hz, rate, sec, sin);
 	//std::vector<char> vc = deep8(v);
 	std::vector<unsigned char> vc = deep16(v);
 	for(int i=0;i<vc.size();i++){
